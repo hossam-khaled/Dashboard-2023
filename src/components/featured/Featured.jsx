@@ -44,7 +44,6 @@ const Featured = () => {
           </div>
         </div>
       </div>
-      <section></section>
     </div>
   );
 };

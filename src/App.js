@@ -6,6 +6,10 @@ import Register from "./pages/auth/Register";
 import New from "./pages/new/New";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { productInputs, userInputs } from "./formSource";
+import {
+  userColumns,
+  productColumns
+} from "./datatablesource";
 import "./style/dark.scss";
 import { useContext, useEffect } from "react";
 import { DarkModeContext } from "./context/darkModeContext";
@@ -61,9 +65,10 @@ function App() {
                 index
                 element={
                   <RequireAuth>
-                    <List />
+                    <List dataTable="users" coloms={userColumns} />
                   </RequireAuth>
-                }
+                }  
+                
               />
               <Route
                 path=":userId"
@@ -77,7 +82,11 @@ function App() {
                 path="new"
                 element={
                   <RequireAuth>
-                    <New inputs={userInputs} title="Add New User" />
+                    <New
+                      inputs={userInputs}
+                      title="Add New User"
+                      dataTable="users"
+                    />
                   </RequireAuth>
                 }
               />
@@ -87,10 +96,11 @@ function App() {
                 index
                 element={
                   <RequireAuth>
-                    <List />
+                    <List dataTable="products" coloms={productColumns}/>
                   </RequireAuth>
                 }
               />
+
               <Route
                 path=":productId"
                 element={
@@ -103,7 +113,11 @@ function App() {
                 path="new"
                 element={
                   <RequireAuth>
-                    <New inputs={productInputs} title="Add New Product" />
+                    <New
+                      inputs={productInputs}
+                      title="Add New Product"
+                      dataTable="products"
+                    />
                   </RequireAuth>
                 }
               />

@@ -1,15 +1,18 @@
 import "./widget.scss";
-import KeyboardArrowUpOutlinedIcon from "@mui/icons-material/KeyboardArrowUpOutlined";
-import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined";
+import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
+import AccountBalanceWalletOutlinedIcon from "@mui/icons-material/AccountBalanceWalletOutlined";
 import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
-import AccountBalanceOutlinedIcon from "@mui/icons-material/AccountBalanceOutlined";
 import MonetizationOnOutlinedIcon from "@mui/icons-material/MonetizationOnOutlined";
-const Widget = ({ type }) => {
-  let data;
+import { useEffect, useState } from "react";
+import { collection, query, where, getDocs } from "firebase/firestore";
+import { db } from "../../firebase";
 
-  // temporary
-  const amount = 100;
-  const diff = 20;
+const Widget = ({ type }) => {
+  const [amount, setAmount] = useState(null);
+  const [diff, setDiff] = useState(null);
+  let data;
 
   switch (type) {
     case "user":
@@ -17,10 +20,14 @@ const Widget = ({ type }) => {
         title: "USERS",
         isMoney: false,
         link: "See all users",
+        query:"users",
         icon: (
-          <PersonOutlineOutlinedIcon
+          <PersonOutlinedIcon
             className="icon"
-            style={{ color: "crimson", backgroundColor: "rgba(255,0,0,0.2)" }}
+            style={{
+              color: "crimson",
+              backgroundColor: "rgba(255, 0, 0, 0.2)",
+            }}
           />
         ),
       };
@@ -29,13 +36,13 @@ const Widget = ({ type }) => {
       data = {
         title: "ORDERS",
         isMoney: false,
-        link: "See all orders",
+        link: "View all orders",
         icon: (
           <ShoppingCartOutlinedIcon
             className="icon"
             style={{
+              backgroundColor: "rgba(218, 165, 32, 0.2)",
               color: "goldenrod",
-              backgroundColor: "rgba(218,165,32,0.2)",
             }}
           />
         ),
@@ -43,26 +50,29 @@ const Widget = ({ type }) => {
       break;
     case "earning":
       data = {
-        title: "EARNING",
+        title: "EARNINGS",
         isMoney: true,
-        link: "See all earning",
+        link: "View net earnings",
         icon: (
           <MonetizationOnOutlinedIcon
             className="icon"
-            style={{ color: "green", backgroundColor: "rgba(00,128,0,0.2)" }}
+            style={{ backgroundColor: "rgba(0, 128, 0, 0.2)", color: "green" }}
           />
         ),
       };
       break;
-    case "balance":
+    case "product":
       data = {
-        title: "BALANCE",
-        isMoney: true,
+        title: "PRODUCTS",
+        query:"products",
         link: "See details",
         icon: (
-          <AccountBalanceOutlinedIcon
+          <AccountBalanceWalletOutlinedIcon
             className="icon"
-            style={{ color: "purple", backgroundColor: "rgba(128,0,128,0.2)" }}
+            style={{
+              backgroundColor: "rgba(128, 0, 128, 0.2)",
+              color: "purple",
+            }}
           />
         ),
       };
@@ -70,19 +80,48 @@ const Widget = ({ type }) => {
     default:
       break;
   }
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const today = new Date();
+      const lastMonth = new Date(new Date().setMonth(today.getMonth() - 1));
+      const prevMonth = new Date(new Date().setMonth(today.getMonth() - 2));
+
+      const lastMonthQuery = query(
+        collection(db, data.query),
+        where("timeStamp", "<=", today),
+        where("timeStamp", ">", lastMonth)
+      );
+      const prevMonthQuery = query(
+        collection(db, data.query),
+        where("timeStamp", "<=", lastMonth),
+        where("timeStamp", ">", prevMonth)
+      );
+
+      const lastMonthData = await getDocs(lastMonthQuery);
+      const prevMonthData = await getDocs(prevMonthQuery);
+
+      setAmount(lastMonthData.docs.length);
+      setDiff(
+        ((lastMonthData.docs.length - prevMonthData.docs.length) / prevMonthData.docs.length) *
+          100
+      );
+    };
+    fetchData();
+  }, [data]);
+
   return (
     <div className="widget">
       <div className="left">
         <span className="title">{data.title}</span>
-        <span className="cunter">
-          {data.isMoney && "$"}
-          {amount}
+        <span className="counter">
+          {data.isMoney && "$"} {amount}
         </span>
         <span className="link">{data.link}</span>
       </div>
       <div className="right">
-        <div className="percentage positive">
-          <KeyboardArrowUpOutlinedIcon />
+        <div className={`percentage ${diff < 0 ? "negative" : "positive"}`}>
+          {diff < 0 ? <KeyboardArrowDownIcon/> : <KeyboardArrowUpIcon/> }
           {diff} %
         </div>
         {data.icon}

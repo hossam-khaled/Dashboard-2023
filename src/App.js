@@ -6,10 +6,7 @@ import Register from "./pages/auth/Register";
 import New from "./pages/new/New";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { productInputs, userInputs } from "./formSource";
-import {
-  userColumns,
-  productColumns
-} from "./datatablesource";
+import { userColumns, productColumns } from "./datatablesource";
 import "./style/dark.scss";
 import { useContext, useEffect } from "react";
 import { DarkModeContext } from "./context/darkModeContext";
@@ -44,7 +41,7 @@ function App() {
 
   return (
     <div className={darkMode ? "app dark" : "app"}>
-      <BrowserRouter>
+      <BrowserRouter basename="ordraty">
         <Routes>
           <Route path="/">
             <Route path="login" element={<Login />} />
@@ -67,8 +64,7 @@ function App() {
                   <RequireAuth>
                     <List dataTable="users" coloms={userColumns} />
                   </RequireAuth>
-                }  
-                
+                }
               />
               <Route
                 path=":userId"
@@ -96,7 +92,7 @@ function App() {
                 index
                 element={
                   <RequireAuth>
-                    <List dataTable="products" coloms={productColumns}/>
+                    <List dataTable="products" coloms={productColumns} />
                   </RequireAuth>
                 }
               />
